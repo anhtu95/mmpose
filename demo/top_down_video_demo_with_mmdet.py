@@ -8,6 +8,7 @@ from mmpose.apis import (inference_top_down_pose_model, init_pose_model,
 
 try:
     from mmdet.apis import inference_detector, init_detector
+
     has_mmdet = True
 except (ImportError, ModuleNotFoundError):
     has_mmdet = False
@@ -56,7 +57,7 @@ def main():
         '--out-video-root',
         default='',
         help='Root of the output video file. '
-        'Default not saving the visualization video.')
+             'Default not saving the visualization video.')
     parser.add_argument(
         '--device', default='cuda:0', help='Device used for inference')
     parser.add_argument(
@@ -99,8 +100,8 @@ def main():
 
     if save_out_video:
         fps = cap.get(cv2.CAP_PROP_FPS)
-        size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
-                int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+        size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) * 0.53),
+                int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) * 0.25))
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         videoWriter = cv2.VideoWriter(
             os.path.join(args.out_video_root,
@@ -112,11 +113,26 @@ def main():
 
     # e.g. use ('backbone', ) to return backbone feature
     output_layer_names = None
-
+    it_frame = 0
+    # det_file = open("./det.txt", 'w')
+    statistic_file = open("../output/keypoints_cropped.txt", 'w')
     while (cap.isOpened()):
         flag, img = cap.read()
         if not flag:
             break
+        if img is None:
+            continue
+        img = img[int(img.shape[0] * 0.6):int(img.shape[0] * 0.85), int(img.shape[1] * 0.22):int(img.shape[1] * 0.75)]
+        # if args.show:
+        #     # cv2.imshow('Image', vis_img)
+        #     cv2.imwrite(os.path.join(args.out_video_root,
+        #                              f'vis_{os.path.basename(args.video_path)}_frame_{it_frame}_input.png'), img)
+
+        if args.show:
+            cv2.imwrite(
+                os.path.join(args.out_video_root,
+                             f'vis_{os.path.basename(args.video_path)}_frame_{it_frame}_input.png'),
+                img)
         # test a single image, the resulting box is (x1, y1, x2, y2)
         mmdet_results = inference_detector(det_model, img)
 
@@ -133,18 +149,36 @@ def main():
             dataset=dataset,
             return_heatmap=return_heatmap,
             outputs=output_layer_names)
-
+        # new_pose_result = []
+        # for pose in pose_results:
+        #     if img.shape[0]*0.5 < pose['bbox'][1] < img.shape[0]*0.8 and img.shape[1]*0.19 < pose['bbox'][0] < img.shape[1]*0.75:
+        #         new_pose_result.append(pose)
+        # pose_width = pose['bbox'][2] - pose['bbox'][0]
+        # pose_height = pose['bbox'][3] - pose['bbox'][1]
+        # det_info_line = f"{it_frame},-1,{pose['bbox'][0]:.2f},{pose['bbox'][1]:.2f}," \
+        #                 f"{pose_width:.2f},{pose_height:.2f},{pose['bbox'][4]:.2f},-1,-1,-1\n"
+        # print(det_info_line)
+        # det_file.write(det_info_line)
+        for i, pose in enumerate(pose_results):
+            key_points = pose['keypoints']
+            for p in key_points:
+                statistic_file.write(f"{it_frame} {i} {int(p[0])} {int(p[1])}\n")
         # show the results
         vis_img = vis_pose_result(
             pose_model,
             img,
             pose_results,
+            # new_pose_result,
             dataset=dataset,
             kpt_score_thr=args.kpt_thr,
             show=False)
 
-        if args.show:
-            cv2.imshow('Image', vis_img)
+        it_frame += 1
+        # if it_frame == 5:
+        #     break
+        # if args.show:
+        #     # cv2.imshow('Image', vis_img)
+        #     cv2.imwrite(os.path.join(args.out_video_root, f'vis_{os.path.basename(args.video_path)}_frame_{it_frame}.png'), vis_img)
 
         if save_out_video:
             videoWriter.write(vis_img)
@@ -152,6 +186,8 @@ def main():
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
+    # det_file.close()
+    statistic_file.close()
     cap.release()
     if save_out_video:
         videoWriter.release()

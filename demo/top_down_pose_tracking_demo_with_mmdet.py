@@ -109,8 +109,8 @@ def main():
 
     if save_out_video:
         fps = cap.get(cv2.CAP_PROP_FPS)
-        size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
-                int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+        size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)*0.4),
+                int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)*0.25))
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         videoWriter = cv2.VideoWriter(
             os.path.join(args.out_video_root,
@@ -125,12 +125,17 @@ def main():
 
     next_id = 0
     pose_results = []
+    it_frame = 0
     while (cap.isOpened()):
         pose_results_last = pose_results
 
         flag, img = cap.read()
         if not flag:
             break
+        if img is None:
+            continue
+        img = img[int(img.shape[0] * 0.6):int(img.shape[0] * 0.85), int(img.shape[1] * 0.2):int(img.shape[1] * 0.7)]
+
         # test a single image, the resulting box is (x1, y1, x2, y2)
         mmdet_results = inference_detector(det_model, img)
 
@@ -167,14 +172,21 @@ def main():
             kpt_score_thr=args.kpt_thr,
             show=False)
 
+        # it_frame += 1
+
         if args.show:
-            cv2.imshow('Image', vis_img)
+            # cv2.imshow('Image', vis_img)
+            cv2.imwrite(
+                os.path.join(args.out_video_root, f'vis_{os.path.basename(args.video_path)}_frame_{it_frame}.png'),
+                vis_img)
 
         if save_out_video:
             videoWriter.write(vis_img)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+        # if it_frame > 10:
+        #     break
 
     cap.release()
     if save_out_video:
