@@ -115,24 +115,26 @@ def main():
     output_layer_names = None
     it_frame = 0
     # det_file = open("./det.txt", 'w')
-    statistic_file = open("../output/keypoints_cropped.txt", 'w')
+    statistic_file = open("../output/keypoints_test_full_cropped.txt", 'w')
     while (cap.isOpened()):
         flag, img = cap.read()
         if not flag:
             break
         if img is None:
             continue
-        img = img[int(img.shape[0] * 0.6):int(img.shape[0] * 0.85), int(img.shape[1] * 0.22):int(img.shape[1] * 0.75)]
-        # if args.show:
-        #     # cv2.imshow('Image', vis_img)
-        #     cv2.imwrite(os.path.join(args.out_video_root,
-        #                              f'vis_{os.path.basename(args.video_path)}_frame_{it_frame}_input.png'), img)
+        # if it_frame % 100 == 0:
 
+        img = img[int(img.shape[0] * 0.6):int(img.shape[0] * 0.85), int(img.shape[1] * 0.22):int(img.shape[1] * 0.75)]
         if args.show:
-            cv2.imwrite(
-                os.path.join(args.out_video_root,
-                             f'vis_{os.path.basename(args.video_path)}_frame_{it_frame}_input.png'),
-                img)
+            # cv2.imshow('Image', vis_img)
+            cv2.imwrite(os.path.join(args.out_video_root,
+                                     f'vis_{os.path.basename(args.video_path)}_frame_{it_frame}_input.png'), img)
+
+        # if args.show:
+        #     cv2.imwrite(
+        #         os.path.join(args.out_video_root,
+        #                      f'vis_{os.path.basename(args.video_path)}_frame_{it_frame}_input.png'),
+        #         img)
         # test a single image, the resulting box is (x1, y1, x2, y2)
         mmdet_results = inference_detector(det_model, img)
 
@@ -173,12 +175,9 @@ def main():
             kpt_score_thr=args.kpt_thr,
             show=False)
 
-        it_frame += 1
-        # if it_frame == 5:
-        #     break
-        # if args.show:
-        #     # cv2.imshow('Image', vis_img)
-        #     cv2.imwrite(os.path.join(args.out_video_root, f'vis_{os.path.basename(args.video_path)}_frame_{it_frame}.png'), vis_img)
+        if args.show:
+            # cv2.imshow('Image', vis_img)
+            cv2.imwrite(os.path.join(args.out_video_root, f'vis_frame_{it_frame}.png'), vis_img)
 
         if save_out_video:
             videoWriter.write(vis_img)
@@ -186,6 +185,7 @@ def main():
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
+        it_frame += 1
     # det_file.close()
     statistic_file.close()
     cap.release()
