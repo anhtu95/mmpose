@@ -121,4 +121,4 @@ with open("./output/key_points.txt", 'r') as f:
             prev_frame = frame_id
 
 videoWriter.release()
-cv2.destroyAllWindows()
+# cv2.destroyAllWindows()

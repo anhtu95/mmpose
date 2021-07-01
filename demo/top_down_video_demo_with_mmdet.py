@@ -117,8 +117,7 @@ def main():
     # det_file = open("./det.txt", 'w')
     statistic_file = open("./output/key_points.txt", 'w')
     while (cap.isOpened()):
-        if it_frame == 10:
-            break
+        
         flag, img = cap.read()
         if not flag:
             break
@@ -166,8 +165,8 @@ def main():
         if save_out_video:
             videoWriter.write(vis_img)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+#         if cv2.waitKey(1) & 0xFF == ord('q'):
+#             break
 
         it_frame += 1
 
@@ -175,7 +174,7 @@ def main():
     cap.release()
     if save_out_video:
         videoWriter.release()
-    cv2.destroyAllWindows()
+#     cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
