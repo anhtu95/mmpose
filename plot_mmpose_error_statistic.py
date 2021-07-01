@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 missing_player = []
 avg_missing_point = []
 
-with open("./output/keypoints_cropped.txt", 'r') as f:
+with open("output_backup/keypoints_cropped.txt", 'r') as f:
     prev_frame = 0
     prev_person = 0
     nb_key_point = 0
