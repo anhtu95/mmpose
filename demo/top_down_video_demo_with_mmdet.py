@@ -56,7 +56,7 @@ def main():
     parser.add_argument(
         '--out-video-root',
         default='',
-        help='Root of the output video file. '
+        help='Root of the output_backup video file. '
              'Default not saving the visualization video.')
     parser.add_argument(
         '--device', default='cuda:0', help='Device used for inference')
@@ -115,26 +115,21 @@ def main():
     output_layer_names = None
     it_frame = 0
     # det_file = open("./det.txt", 'w')
-    statistic_file = open("../output/keypoints_test_full_cropped.txt", 'w')
+    statistic_file = open("./output/key_points.txt", 'w')
     while (cap.isOpened()):
+        if it_frame == 10:
+            break
         flag, img = cap.read()
         if not flag:
             break
         if img is None:
             continue
-        # if it_frame % 100 == 0:
 
         img = img[int(img.shape[0] * 0.6):int(img.shape[0] * 0.85), int(img.shape[1] * 0.22):int(img.shape[1] * 0.75)]
         if args.show:
-            # cv2.imshow('Image', vis_img)
             cv2.imwrite(os.path.join(args.out_video_root,
                                      f'vis_{os.path.basename(args.video_path)}_frame_{it_frame}_input.png'), img)
 
-        # if args.show:
-        #     cv2.imwrite(
-        #         os.path.join(args.out_video_root,
-        #                      f'vis_{os.path.basename(args.video_path)}_frame_{it_frame}_input.png'),
-        #         img)
         # test a single image, the resulting box is (x1, y1, x2, y2)
         mmdet_results = inference_detector(det_model, img)
 
@@ -151,16 +146,7 @@ def main():
             dataset=dataset,
             return_heatmap=return_heatmap,
             outputs=output_layer_names)
-        # new_pose_result = []
-        # for pose in pose_results:
-        #     if img.shape[0]*0.5 < pose['bbox'][1] < img.shape[0]*0.8 and img.shape[1]*0.19 < pose['bbox'][0] < img.shape[1]*0.75:
-        #         new_pose_result.append(pose)
-        # pose_width = pose['bbox'][2] - pose['bbox'][0]
-        # pose_height = pose['bbox'][3] - pose['bbox'][1]
-        # det_info_line = f"{it_frame},-1,{pose['bbox'][0]:.2f},{pose['bbox'][1]:.2f}," \
-        #                 f"{pose_width:.2f},{pose_height:.2f},{pose['bbox'][4]:.2f},-1,-1,-1\n"
-        # print(det_info_line)
-        # det_file.write(det_info_line)
+
         for i, pose in enumerate(pose_results):
             key_points = pose['keypoints']
             for p in key_points:
@@ -170,13 +156,11 @@ def main():
             pose_model,
             img,
             pose_results,
-            # new_pose_result,
             dataset=dataset,
             kpt_score_thr=args.kpt_thr,
             show=False)
 
         if args.show:
-            # cv2.imshow('Image', vis_img)
             cv2.imwrite(os.path.join(args.out_video_root, f'vis_frame_{it_frame}.png'), vis_img)
 
         if save_out_video:
@@ -186,7 +170,7 @@ def main():
             break
 
         it_frame += 1
-    # det_file.close()
+
     statistic_file.close()
     cap.release()
     if save_out_video:

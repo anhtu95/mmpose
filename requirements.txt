@@ -1,4 +1,4 @@
-numpy
-torch
-torchvision
-mmdet>=2.11.0
+-r requirements/build.txt
+-r requirements/runtime.txt
+-r requirements/tests.txt
+-r requirements/optional.txt
