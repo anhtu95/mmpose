@@ -24,3 +24,4 @@
 
 - `video_path` is path of basket ball video input
 - `device`: `cpu` for using MMPose with CPU or `cuda` if using GPU
+- the outputs is in new created `output` folder
