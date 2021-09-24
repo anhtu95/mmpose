@@ -1,4 +1,5 @@
 # Human Pose Estimation (HPE) in basketball videos
+The objective of this project is simulate the human pose in basketball videos which is the movement of players to 2-dimension image.
 
 ## How to run
 
